@@ -1,21 +1,28 @@
 "use client"
-import { Link } from "react-router-dom"
-import { useParams } from "react-router-dom"
+import { Link, useParams, useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import * as Yup from "yup"
-import { FaBuilding, FaFileAlt, FaCalendarAlt, FaSave, FaArrowLeft, FaEdit } from "react-icons/fa"
+import axios from "axios"
+import { FaBuilding, FaFileAlt,FaMoneyBillWave , FaCalendarAlt, FaSave, FaArrowLeft, FaEdit } from "react-icons/fa"
+import { useEffect, useState } from "react"
 
 const EditProject = () => {
   const { projectId } = useParams()
+  const navigate = useNavigate()
+  const [project, setProject] = useState(null)
 
-  const projectData = {
-    id: projectId,
-    name: "Build Hospital",
-    description:
-      "Build Hospital is born Meldall it will have 2000m. Build Hospital is born Meldall it w. Build Hospital I edull it will have 2000m.",
-    startDate: "2025-05-01", 
-    endDate: "2026-05-01", 
-  }
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const response = await axios.get(`http://localhost:7000/api/projects/${projectId}`)
+        setProject(response.data)
+      } catch (error) {
+        console.error("Error fetching project:", error)
+      }
+    }
+
+    fetchProject()
+  }, [projectId])
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Project name is required"),
@@ -24,15 +31,35 @@ const EditProject = () => {
     endDate: Yup.date()
       .required("End date is required")
       .min(Yup.ref("startDate"), "End date must be after start date"),
+    budget: Yup.number()
+      .typeError("Budget must be a number")
+      .required("Budget is required")
+      .positive("Budget must be positive"),
   })
 
   const formik = useFormik({
-    initialValues: projectData,
+    initialValues: {
+      name: project?.name || "",
+      description: project?.description || "",
+      startDate: project?.startDate ? new Date(project.startDate).toISOString().split('T')[0] : "",
+      endDate: project?.endDate ? new Date(project.endDate).toISOString().split('T')[0] : "",
+      budget: project?.budget || "",
+    },
     validationSchema,
-    onSubmit: (values) => {
-      console.log("Updated project:", values)
+    enableReinitialize: true, 
+    onSubmit: async (values) => {
+      try {
+        await axios.put(`http://localhost:7000/api/projects/${projectId}`, values)
+        navigate("/")
+      } catch (error) {
+        console.error("Error updating project:", error)
+      }
     },
   })
+
+  if (!project) {
+    return <div>Loading...</div>
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-10 px-4">
@@ -128,6 +155,27 @@ const EditProject = () => {
                       <div className="text-red-500 text-sm mt-1">{formik.errors.endDate}</div>
                     ) : null}
                   </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Budget (Dh)</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaMoneyBillWave className="text-gray-400" />
+                  </div>
+                  <input
+                    type="number"
+                    name="budget"
+                    value={formik.values.budget}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter budget amount"
+                  />
+                  {formik.touched.budget && formik.errors.budget ? (
+                    <div className="text-red-500 text-sm mt-1">{formik.errors.budget}</div>
+                  ) : null}
                 </div>
               </div>
             </div>

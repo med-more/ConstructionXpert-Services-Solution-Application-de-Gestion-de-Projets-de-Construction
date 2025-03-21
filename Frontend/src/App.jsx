@@ -1,14 +1,32 @@
-import './App.css'
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-function App() {
+import Navbar from "./pages/Navbar";
+import Home from "./pages/Home";
+import AddProject from "./pages/AddProject";
+import EditProject from "./pages/EditProject"; 
 
+const App = () => {
   return (
-    <>
-     <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-    </>
-  )
-}
+    <Router>
+      <div className="min-h-screen bg-gray-100">
+        <Navbar />
+        <main className="p-4">
+          <Routes>
+            {/* Home Page */}
+            <Route path="/" element={<Home />} />
 
-export default App
+            {/* Project Pages */}
+            <Route path="/add-project" element={<AddProject />} />
+            <Route
+              path="/project/:projectId/edit-project"
+              element={<EditProject />}
+            />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  );
+};
+
+export default App;
