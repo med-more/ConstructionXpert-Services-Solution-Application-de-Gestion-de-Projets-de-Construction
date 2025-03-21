@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 
 const Home = () => {
+  const [showFloatingButton, setShowFloatingButton] = useState(false)
   const [projects, setProjects] = useState([])
 
   useEffect(() => {
@@ -18,6 +19,25 @@ const Home = () => {
     }
 
     fetchProjects()
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show floating button when scrolled down more than 200px
+      if (window.scrollY > 200) {
+        setShowFloatingButton(true)
+      } else {
+        setShowFloatingButton(false)
+      }
+    }
+
+    // Add scroll event listener
+    window.addEventListener("scroll", handleScroll)
+
+    // Clean up event listener
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
   }, [])
 
   const handleDelete = async (id) => {
@@ -111,6 +131,14 @@ const Home = () => {
           ))}
         </div>
       </div>
+      <Link
+        to="/add-project"
+        className={`fixed bottom-8 right-8 bg-teal-500 text-white p-4 rounded-full shadow-lg hover:bg-teal-600 transition-all duration-300 flex items-center justify-center transform hover:scale-110 z-50 ${
+          showFloatingButton ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
+        }`}
+      >
+        <FaPlus className="h-6 w-6" />
+      </Link>
     </div>
   )
 }
