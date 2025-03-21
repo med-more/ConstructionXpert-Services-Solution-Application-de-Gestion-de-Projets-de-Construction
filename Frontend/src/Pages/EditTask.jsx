@@ -1,21 +1,15 @@
-"use client"
+"use client";
 
-import { useParams } from "react-router-dom"
-import { Link } from "react-router-dom"
-import { useFormik } from "formik"
-import * as Yup from "yup"
-import { FaTasks, FaFileAlt, FaCalendarAlt, FaSave, FaArrowLeft, FaEdit } from "react-icons/fa"
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
+import { FaTasks, FaFileAlt, FaCalendarAlt, FaSave, FaArrowLeft, FaEdit } from "react-icons/fa";
+import { useEffect } from "react";
 
 const EditTask = () => {
-  const { projectId, taskId } = useParams()
-
-  const taskData = {
-    id: taskId,
-    name: "Task 1",
-    description: "Description of Task 1",
-    startDate: "2025-05-01", 
-    endDate: "2025-06-01", 
-  }
+  const { projectId, taskId } = useParams();
+  const navigate = useNavigate();
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Task name is required"),
@@ -24,22 +18,57 @@ const EditTask = () => {
     endDate: Yup.date()
       .required("End date is required")
       .min(Yup.ref("startDate"), "End date must be after start date"),
-  })
+  });
 
   const formik = useFormik({
-    initialValues: taskData,
-    validationSchema,
-    onSubmit: (values) => {
-      console.log("Updated task:", values)
+    initialValues: {
+      name: "",
+      description: "",
+      startDate: "",
+      endDate: "",
     },
-  })
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        const response = await axios.put(`http://localhost:7000/api/tasks/${taskId}`, values);
+        console.log("Task updated:", response.data);
+        navigate(`/project/${projectId}/tasks`);
+      } catch (error) {
+        console.error("Error updating task:", error);
+      }
+    },
+  });
+
+  // Fetch task data when the component mounts
+  useEffect(() => {
+    const fetchTask = async () => {
+      try {
+        const response = await axios.get(`http://localhost:7000/api/tasks/${taskId}`);
+        const task = response.data;
+
+        // Format dates to YYYY-MM-DD for the input fields
+        const formattedStartDate = new Date(task.startDate).toISOString().split("T")[0];
+        const formattedEndDate = new Date(task.endDate).toISOString().split("T")[0];
+
+        // Set the form values
+        formik.setValues({
+          name: task.name,
+          description: task.description,
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+        });
+      } catch (error) {
+        console.error("Error fetching task:", error);
+      }
+    };
+
+    fetchTask();
+  }, [taskId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-10 px-4">
       <div className="max-w-3xl mx-auto">
-        {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
           <div className="bg-gradient-to-r from-teal-500 to-teal-600 p-6 text-white">
             <h2 className="text-2xl font-bold flex items-center">
               <FaEdit className="mr-3" />
@@ -91,9 +120,7 @@ const EditTask = () => {
                 </div>
               </div>
 
-              {/* Dates Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Start Date */}
                 <div>
                   <label className="block text-gray-700 font-medium mb-2">Start Date</label>
                   <div className="relative">
@@ -166,7 +193,7 @@ const EditTask = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default EditTask
+export default EditTask;
