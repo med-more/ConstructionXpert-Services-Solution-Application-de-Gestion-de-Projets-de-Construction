@@ -1,9 +1,8 @@
 "use client"
-
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import * as Yup from "yup"
+import axios from "axios"
 import {
   FaBuilding,
   FaFileAlt,
@@ -15,6 +14,7 @@ import {
 } from "react-icons/fa"
 
 const AddProject = () => {
+  const navigate = useNavigate()
   const validationSchema = Yup.object({
     name: Yup.string().required("Project name is required"),
     description: Yup.string().required("Description is required"),
@@ -26,7 +26,6 @@ const AddProject = () => {
       .typeError("Budget must be a number")
       .required("Budget is required")
       .positive("Budget must be positive"),
-    status: Yup.string().required("Status is required"),
   })
 
   const formik = useFormik({
@@ -38,9 +37,13 @@ const AddProject = () => {
       budget: "",
     },
     validationSchema,
-    onSubmit: (values) => {
-      console.log("Form submitted:", values)
-      // Add your form submission logic here
+    onSubmit: async (values) => {
+      try {
+        const response = await axios.post("http://localhost:7000/api/projects", values)
+        navigate("/")
+      } catch (error) {
+        console.error("Error creating project:", error)
+      }
     },
   })
 
@@ -154,7 +157,7 @@ const AddProject = () => {
                   <input
                     type="text"
                     name="budget"
-                    value={formik.values.budget ? `$${formatCurrency(formik.values.budget)}` : ""}
+                    value={formik.values.budget ? `${formatCurrency(formik.values.budget)}` : ""}
                     onChange={(e) => {
                       const value = e.target.value.replace(/[$,]/g, "")
                       formik.setFieldValue("budget", value)
