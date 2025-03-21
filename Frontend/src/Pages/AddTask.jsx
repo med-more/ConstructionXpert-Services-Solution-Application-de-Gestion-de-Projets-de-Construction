@@ -1,8 +1,9 @@
-"use client"
-import { Link } from "react-router-dom"
-import { useParams } from "react-router-dom"
-import { useFormik } from "formik"
-import * as Yup from "yup"
+"use client";
+
+import { Link, useParams } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
 import {
   FaTasks,
   FaFileAlt,
@@ -10,10 +11,10 @@ import {
   FaSave,
   FaArrowLeft,
   FaClipboardCheck,
-} from "react-icons/fa"
+} from "react-icons/fa";
 
 const AddTask = () => {
-  const { projectId } = useParams()
+  const { projectId } = useParams();
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Task name is required"),
@@ -22,8 +23,7 @@ const AddTask = () => {
     endDate: Yup.date()
       .required("End date is required")
       .min(Yup.ref("startDate"), "End date must be after start date"),
-    resources: Yup.string().required("Resources are required"),
-  })
+  });
 
   const formik = useFormik({
     initialValues: {
@@ -31,13 +31,22 @@ const AddTask = () => {
       description: "",
       startDate: "",
       endDate: "",
-      resources: "",
     },
     validationSchema,
-    onSubmit: (values) => {
-      console.log("Task form submitted:", values)
+    onSubmit: async (values) => {
+      try {
+        const response = await axios.post("http://localhost:7000/api/tasks", {
+          ...values,
+          projectId,
+        });
+        console.log("Task created:", response.data);
+        // Redirect to tasks page after creation
+        window.location.href = `/project/${projectId}/tasks`;
+      } catch (error) {
+        console.error("Error creating task:", error);
+      }
     },
-  })
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-10 px-4">
@@ -133,34 +142,6 @@ const AddTask = () => {
                   ) : null}
                 </div>
               </div>
-
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">Resources</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    name="resources"
-                    value={formik.values.resources}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Materials, equipment, etc."
-                  />
-                  {formik.touched.resources && formik.errors.resources ? (
-                    <div className="text-red-500 text-sm mt-1">{formik.errors.resources}</div>
-                  ) : null}
-                </div>
-              </div>
             </div>
 
             <div className="mt-8 flex flex-col md:flex-row md:justify-between space-y-4 md:space-y-0">
@@ -193,7 +174,7 @@ const AddTask = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AddTask
+export default AddTask;
