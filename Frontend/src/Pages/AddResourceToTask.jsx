@@ -1,9 +1,7 @@
-"use client"
-
-import { Link } from "react-router-dom"
-import { useParams } from "react-router-dom"
-import { useFormik } from "formik"
-import * as Yup from "yup"
+import { Link, useParams } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
 import {
   FaTools,
   FaBoxOpen,
@@ -12,10 +10,10 @@ import {
   FaSave,
   FaArrowLeft,
   FaWarehouse,
-} from "react-icons/fa"
+} from "react-icons/fa";
 
 const AddResourceToTask = () => {
-  const { projectId, taskId } = useParams()
+  const { projectId, taskId } = useParams();
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Resource name is required"),
@@ -25,7 +23,7 @@ const AddResourceToTask = () => {
       .required("Quantity is required")
       .positive("Quantity must be positive"),
     supplier: Yup.string().required("Supplier is required"),
-  })
+  });
 
   const formik = useFormik({
     initialValues: {
@@ -35,10 +33,20 @@ const AddResourceToTask = () => {
       supplier: "",
     },
     validationSchema,
-    onSubmit: (values) => {
-      console.log("Resource form submitted:", values)
+    onSubmit: async (values) => {
+      try {
+        const response = await axios.post("http://localhost:7000/api/resource", {
+          ...values,
+          taskId,
+        });
+        console.log("Resource created:", response.data);
+        // Redirect to resources page after creation
+        window.location.href = `/project/${projectId}/task/${taskId}/resources`;
+      } catch (error) {
+        console.error("Error creating resource:", error);
+      }
     },
-  })
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-10 px-4">
@@ -87,8 +95,7 @@ const AddResourceToTask = () => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
-                  >
-                  </input>
+                  />
                   {formik.touched.type && formik.errors.type ? (
                     <div className="text-red-500 text-sm mt-1">{formik.errors.type}</div>
                   ) : null}
@@ -170,7 +177,7 @@ const AddResourceToTask = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AddResourceToTask
+export default AddResourceToTask;
