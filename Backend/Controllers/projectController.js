@@ -1,4 +1,6 @@
 const Project = require('../Models/project');
+const Task = require('../Models/Task');
+const Resource = require('../Models/Resource');
 
 // Create a new project
 const createProject = async (req, res) => {
@@ -50,14 +52,26 @@ const updateProject = async (req, res) => {
   }
 };
 
+
 // Delete a project by ID
 const deleteProject = async (req, res) => {
   try {
-    const project = await Project.findByIdAndDelete(req.params.id);
+    const projectId = req.params.id;
+
+    const tasks = await Task.find({ projectId });//Recherche toutes les tâches dans la collection Task où le champ projectId correspond à l'ID du projet.
+
+    for (const task of tasks) {
+      await Resource.deleteMany({ taskId: task._id });
+    }
+
+    await Task.deleteMany({ projectId });
+
+    const project = await Project.findByIdAndDelete(projectId);
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
-    res.status(200).json({ message: 'Project deleted successfully' });
+
+    res.status(200).json({ message: 'Project and associated tasks and resources deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
