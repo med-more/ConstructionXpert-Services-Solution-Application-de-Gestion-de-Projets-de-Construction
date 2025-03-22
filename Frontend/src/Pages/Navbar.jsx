@@ -1,4 +1,3 @@
-"use client"
 import { Link } from "react-router-dom"
 import { useState } from "react"
 import { FaTools } from "react-icons/fa"
@@ -31,14 +30,6 @@ const Navbar = () => {
             Home
             <span className="absolute inset-x-0 bottom-0 h-0.5 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
           </Link>
-          <Link to="/resources" className="text-white hover:text-white relative group font-medium">
-            Resources
-            <span className="absolute inset-x-0 bottom-0 h-0.5 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
-          </Link>
-          <button className="bg-white text-teal-600 px-4 py-2 rounded-full hover:bg-opacity-90 transition-all duration-300 font-medium flex items-center space-x-2 shadow-md hover:shadow-lg">
-            <span>Logout</span>
-            <span className="text-xs ml-1">↪</span>
-          </button>
         </div>
 
         <div className="md:hidden">
@@ -69,20 +60,6 @@ const Navbar = () => {
             >
               Home
             </Link>
-            <Link
-              to="/resources"
-              className="text-white hover:bg-teal-700/50 py-2 px-4 rounded-md transition-colors font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Resources
-            </Link>
-            <button
-              className="bg-white text-teal-600 px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-300 font-medium flex items-center justify-center space-x-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <span>Logout</span>
-              <span className="text-xs ml-1">↪</span>
-            </button>
           </div>
         </div>
       )}
@@ -91,4 +68,3 @@ const Navbar = () => {
 }
 
 export default Navbar
-

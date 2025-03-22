@@ -1,36 +1,62 @@
-"use client"
-
-import { useParams } from "react-router-dom"
-import { Link } from "react-router-dom"
-import { useFormik } from "formik"
-import * as Yup from "yup"
-import { FaBoxOpen, FaTag, FaWeightHanging, FaTruck, FaSave, FaArrowLeft, FaEdit } from "react-icons/fa"
+import { useParams, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
+import { FaBoxOpen, FaTag, FaWeightHanging, FaTruck, FaSave, FaArrowLeft, FaEdit } from "react-icons/fa";
+import { useEffect } from "react";
 
 const EditResource = () => {
-  const { projectId, taskId, resourceId } = useParams()
-
-  const resourceData = {
-    id: resourceId,
-    name: "Man",
-    type: "transport",
-    quantity: "100ps",
-    fournisseur: "FSTP",
-  }
+  const { projectId, taskId, resourceId } = useParams();
+  const navigate = useNavigate();
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Resource name is required"),
     type: Yup.string().required("Resource type is required"),
-    quantity: Yup.string().required("Quantity is required"),
-    fournisseur: Yup.string().required("Supplier is required"),
-  })
+    quantity: Yup.number()
+      .typeError("Quantity must be a number")
+      .required("Quantity is required")
+      .positive("Quantity must be positive"),
+    supplier: Yup.string().required("Supplier is required"),
+  });
 
   const formik = useFormik({
-    initialValues: resourceData,
-    validationSchema,
-    onSubmit: (values) => {
-      console.log("Updated resource:", values)
+    initialValues: {
+      name: "",
+      type: "",
+      quantity: "",
+      supplier: "",
     },
-  })
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        const response = await axios.put(`http://localhost:7000/api/resource/${resourceId}`, values);
+        console.log("Resource updated:", response.data);
+        navigate(`/project/${projectId}/task/${taskId}/resources`);
+      } catch (error) {
+        console.error("Error updating resource:", error);
+      }
+    },
+  });
+
+  useEffect(() => {
+    const fetchResource = async () => {
+      try {
+        const response = await axios.get(`http://localhost:7000/api/resource/${resourceId}`);
+        const resource = response.data;
+        formik.setValues({
+          name: resource.name,
+          type: resource.type,
+          quantity: resource.quantity,
+          supplier: resource.supplier,
+        });
+      } catch (error) {
+        console.error("Error fetching resource:", error);
+      }
+    };
+
+    fetchResource();
+  }, [resourceId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-10 px-4">
@@ -95,7 +121,7 @@ const EditResource = () => {
                     <FaWeightHanging className="text-gray-400" />
                   </div>
                   <input
-                    type="text"
+                    type="number"
                     name="quantity"
                     value={formik.values.quantity}
                     onChange={formik.handleChange}
@@ -110,22 +136,22 @@ const EditResource = () => {
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-2">Supplier (Fournisseur)</label>
+                <label className="block text-gray-700 font-medium mb-2">Supplier</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FaTruck className="text-gray-400" />
                   </div>
                   <input
                     type="text"
-                    name="fournisseur"
-                    value={formik.values.fournisseur}
+                    name="supplier"
+                    value={formik.values.supplier}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                     placeholder="Enter supplier name"
                   />
-                  {formik.touched.fournisseur && formik.errors.fournisseur ? (
-                    <div className="text-red-500 text-sm mt-1">{formik.errors.fournisseur}</div>
+                  {formik.touched.supplier && formik.errors.supplier ? (
+                    <div className="text-red-500 text-sm mt-1">{formik.errors.supplier}</div>
                   ) : null}
                 </div>
               </div>
@@ -161,7 +187,7 @@ const EditResource = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default EditResource
+export default EditResource;

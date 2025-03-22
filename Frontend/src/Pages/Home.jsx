@@ -1,4 +1,3 @@
-"use client"
 import { Link } from "react-router-dom"
 import { FaCalendarAlt, FaMoneyBillWave, FaEdit, FaTrashAlt, FaPlus } from "react-icons/fa"
 import { useEffect, useState } from "react"

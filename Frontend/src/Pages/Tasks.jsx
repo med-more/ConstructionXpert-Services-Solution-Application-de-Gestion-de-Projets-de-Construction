@@ -1,9 +1,14 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaCalendarAlt, FaPlus, FaEdit, FaTools, FaTrashAlt } from "react-icons/fa";
 import axios from "axios";
+import {
+  FaArrowLeft,
+  FaCalendarAlt,
+  FaPlus,
+  FaEdit,
+  FaTools,
+  FaTrashAlt,
+} from "react-icons/fa";
 
 const Tasks = () => {
   const { projectId } = useParams();
@@ -12,6 +17,7 @@ const Tasks = () => {
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [project, setProject] = useState(null);
+  const [resourceCounts, setResourceCounts] = useState({});
 
   // Fetch project and tasks from the backend
   useEffect(() => {
@@ -24,8 +30,16 @@ const Tasks = () => {
         // Fetch tasks for the project
         const tasksResponse = await axios.get(`http://localhost:7000/api/tasks/project/${projectId}`);
         setTasks(tasksResponse.data);
+
+        // Fetch resource counts for each task
+        const counts = {};
+        for (const task of tasksResponse.data) {
+          const resourcesResponse = await axios.get(`http://localhost:7000/api/resource/task/${task._id}`);
+          counts[task._id] = resourcesResponse.data.length;
+        }
+        setResourceCounts(counts);
       } catch (error) {
-        console.error("Error fetching project or tasks:", error);
+        console.error("Error fetching project, tasks, or resources:", error);
       }
     };
 
@@ -156,7 +170,7 @@ const Tasks = () => {
                     className="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1 border border-blue-200"
                   >
                     <FaTools className="text-xs" />
-                    <span>Resources</span>
+                    <span>Resources ({resourceCounts[task._id] || 0})</span>
                   </Link>
                   <div className="flex gap-2">
                     <Link

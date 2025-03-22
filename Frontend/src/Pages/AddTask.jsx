@@ -1,5 +1,3 @@
-"use client";
-
 import { Link, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -40,7 +38,6 @@ const AddTask = () => {
           projectId,
         });
         console.log("Task created:", response.data);
-        // Redirect to tasks page after creation
         window.location.href = `/project/${projectId}/tasks`;
       } catch (error) {
         console.error("Error creating task:", error);

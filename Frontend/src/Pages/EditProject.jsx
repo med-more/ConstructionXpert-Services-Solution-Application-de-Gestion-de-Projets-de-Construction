@@ -1,4 +1,3 @@
-"use client"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import * as Yup from "yup"
