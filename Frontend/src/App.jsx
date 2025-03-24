@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./pages/Navbar";
 import Home from "./pages/Home";
 import Tasks from "./pages/Tasks";
-import AddProject from "./pages/AddProject";
+import AddProject from "./Pages/AddProject";
 import AddTask from "./pages/AddTask";
 import TaskResources from "./pages/TaskResources";
 import AddResourceToTask from "./pages/AddResourceToTask";

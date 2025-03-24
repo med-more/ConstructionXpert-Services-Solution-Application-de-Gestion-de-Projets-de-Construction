@@ -1,57 +1,86 @@
-import { Link } from "react-router-dom"
-import { FaCalendarAlt, FaMoneyBillWave, FaEdit, FaTrashAlt, FaPlus } from "react-icons/fa"
-import { useEffect, useState } from "react"
-import axios from "axios"
+import { Link } from "react-router-dom";
+import { FaCalendarAlt, FaMoneyBillWave, FaEdit, FaTrashAlt, FaPlus } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast"; 
 
 const Home = () => {
-  const [showFloatingButton, setShowFloatingButton] = useState(false)
-  const [projects, setProjects] = useState([])
+  const [showFloatingButton, setShowFloatingButton] = useState(false);
+  const [projects, setProjects] = useState([]);
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await axios.get("http://localhost:7000/api/projects")
-        setProjects(response.data)
+        const response = await axios.get("http://localhost:7000/api/projects");
+        setProjects(response.data);
       } catch (error) {
-        console.error("Error fetching projects:", error)
+        console.error("Error fetching projects:", error);
       }
-    }
+    };
 
-    fetchProjects()
+    fetchProjects();
   }, []);
 
   useEffect(() => {
     const handleScroll = () => {
-      // Show floating button when scrolled down more than 200px
       if (window.scrollY > 200) {
-        setShowFloatingButton(true)
+        setShowFloatingButton(true);
       } else {
-        setShowFloatingButton(false)
+        setShowFloatingButton(false);
       }
-    }
+    };
 
     // Add scroll event listener
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll);
 
     // Clean up event listener
     return () => {
-      window.removeEventListener("scroll", handleScroll)
-    }
-  }, [])
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const handleDelete = async (id) => {
-    if (confirm("Are you sure you want to delete this project?")) {
-      try {
-        await axios.delete(`http://localhost:7000/api/projects/${id}`)
-        setProjects(projects.filter(project => project._id !== id))
-      } catch (error) {
-        console.error("Error deleting project:", error)
+    
+    toast.custom(
+      (t) => (
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <p className="text-lg font-medium text-gray-800 mb-4">Are you sure you want to delete this project?</p>
+          <p className="text-lg font-medium text-red-600 mb-4">❗all associated tasks and resources are also deleted</p>
+          <div className="flex justify-end space-x-3">
+            <button
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              onClick={() => toast.dismiss(t.id)} 
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              onClick={async () => {
+                try {
+                  await axios.delete(`http://localhost:7000/api/projects/${id}`);
+                  setProjects(projects.filter((project) => project._id !== id));
+                  toast.success("Project deleted successfully!"); 
+                  toast.dismiss(t.id); 
+                } catch (error) {
+                  console.error("Error deleting project:", error);
+                  toast.error("Failed to delete project. Please try again."); 
+                }
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity, 
       }
-    }
-  }
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-16">
+      <Toaster position="top-center" reverseOrder={false} /> 
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -139,7 +168,7 @@ const Home = () => {
         <FaPlus className="h-6 w-6" />
       </Link>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

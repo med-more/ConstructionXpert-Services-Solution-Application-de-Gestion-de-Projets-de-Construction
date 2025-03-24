@@ -1,27 +1,28 @@
-import { Link, useParams, useNavigate } from "react-router-dom"
-import { useFormik } from "formik"
-import * as Yup from "yup"
-import axios from "axios"
-import { FaBuilding, FaFileAlt,FaMoneyBillWave , FaCalendarAlt, FaSave, FaArrowLeft, FaEdit } from "react-icons/fa"
-import { useEffect, useState } from "react"
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
+import { FaBuilding, FaFileAlt, FaMoneyBillWave, FaCalendarAlt, FaSave, FaArrowLeft, FaEdit } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 const EditProject = () => {
-  const { projectId } = useParams()
-  const navigate = useNavigate()
-  const [project, setProject] = useState(null)
+  const { projectId } = useParams();
+  const navigate = useNavigate();
+  const [project, setProject] = useState(null);
 
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await axios.get(`http://localhost:7000/api/projects/${projectId}`)
-        setProject(response.data)
+        const response = await axios.get(`http://localhost:7000/api/projects/${projectId}`);
+        setProject(response.data);
       } catch (error) {
-        console.error("Error fetching project:", error)
+        console.error("Error fetching project:", error);
       }
-    }
+    };
 
-    fetchProject()
-  }, [projectId])
+    fetchProject();
+  }, [projectId]);
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Project name is required"),
@@ -34,7 +35,7 @@ const EditProject = () => {
       .typeError("Budget must be a number")
       .required("Budget is required")
       .positive("Budget must be positive"),
-  })
+  });
 
   const formik = useFormik({
     initialValues: {
@@ -45,23 +46,28 @@ const EditProject = () => {
       budget: project?.budget || "",
     },
     validationSchema,
-    enableReinitialize: true, 
+    enableReinitialize: true,
     onSubmit: async (values) => {
       try {
-        await axios.put(`http://localhost:7000/api/projects/${projectId}`, values)
-        navigate("/")
+        await axios.put(`http://localhost:7000/api/projects/${projectId}`, values);
+        toast.success("Project updated successfully!"); 
+        setTimeout(() => {
+          navigate("/"); 
+        }, 1500); 
       } catch (error) {
-        console.error("Error updating project:", error)
+        console.error("Error updating project:", error);
+        toast.error("Failed to update project. Please try again."); 
       }
     },
-  })
+  });
 
   if (!project) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-10 px-4">
+      <Toaster position="top-center" reverseOrder={false} /> 
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-teal-500 to-teal-600 p-6 text-white">
@@ -209,7 +215,7 @@ const EditProject = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default EditProject
+export default EditProject;

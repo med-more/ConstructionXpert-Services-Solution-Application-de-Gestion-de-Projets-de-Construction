@@ -9,11 +9,11 @@ import {
   FaTools,
   FaTrashAlt,
 } from "react-icons/fa";
+import toast, { Toaster } from "react-hot-toast"; 
 
 const Tasks = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [project, setProject] = useState(null);
@@ -40,13 +40,17 @@ const Tasks = () => {
         setResourceCounts(counts);
       } catch (error) {
         console.error("Error fetching project, tasks, or resources:", error);
+
+        toast.error("Failed to fetch project or tasks. Please try again.", {
+          duration: 1500,
+          position: "top-center",
+        });
       }
     };
 
     fetchProjectAndTasks();
   }, [projectId]);
 
-  // Handle scroll to show/hide floating button
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 200) {
@@ -63,24 +67,51 @@ const Tasks = () => {
     };
   }, []);
 
-  // Filter tasks based on search term
-  const filteredTasks = tasks.filter((task) => {
-    return (
-      task.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
+  const handleDeleteTask = (taskId) => {
+    toast.custom(
+      (t) => (
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <p className="text-lg font-medium text-gray-800 mb-4">Are you sure you want to delete this task?</p>
+          <p className="text-lg font-medium text-red-600 mb-4">❗All associated resources will also be deleted</p>
+          <div className="flex justify-end space-x-3">
+            <button
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              onClick={() => toast.dismiss(t.id)} 
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              onClick={async () => {
+                try {
+                  await axios.delete(`http://localhost:7000/api/tasks/${taskId}`);
+                  setTasks(tasks.filter((task) => task._id !== taskId));
 
-  // Handle task deletion
-  const handleDeleteTask = async (taskId) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      try {
-        await axios.delete(`http://localhost:7000/api/tasks/${taskId}`);
-        setTasks(tasks.filter((task) => task._id !== taskId));
-      } catch (error) {
-        console.error("Error deleting task:", error);
+                  toast.success("Task deleted successfully!", {
+                    duration: 1500,
+                    position: "top-center",
+                  });
+                  toast.dismiss(t.id);
+                } catch (error) {
+                  console.error("Error deleting task:", error);
+
+                  toast.error("Failed to delete task. Please try again.", {
+                    duration: 1500,
+                    position: "top-center",
+                  });
+                  toast.dismiss(t.id);
+                }
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity, 
       }
-    }
+    );
   };
 
   if (!project) {
@@ -89,8 +120,9 @@ const Tasks = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-16">
+      <Toaster />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Project Header */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6 border border-gray-200">
           <div className="bg-gradient-to-r from-teal-500 to-teal-800 p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between">
@@ -103,16 +135,15 @@ const Tasks = () => {
                 </button>
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-bold text-white">{project.name}</h1>
-                  <p className="text-teal-100 mt-1">{project.description}</p>
+                  <p className="text-teal-100 mt-1 text-sm">{project.description}</p>
                 </div>
               </div>
-              <div className="bg-white/10 px-4 py-2 rounded-lg text-white">
+              <div className="bg-white/10 px-5 py-2 rounded-lg text-white">
                 <div className="text-xs text-teal-100">Project Duration</div>
                 <div className="flex items-center">
                   <FaCalendarAlt className="mr-2 text-teal-200" />
                   <span>
-                    {new Date(project.startDate).toLocaleDateString()} -{" "}
-                    {new Date(project.endDate).toLocaleDateString()}
+                    {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
                   </span>
                 </div>
               </div>
@@ -120,7 +151,6 @@ const Tasks = () => {
           </div>
         </div>
 
-        {/* Controls */}
         <div className="flex flex-wrap gap-2 w-full mb-5 sm:w-auto">
           <Link
             to={`/project/${projectId}/add-task`}
@@ -131,20 +161,17 @@ const Tasks = () => {
           </Link>
         </div>
 
-        {/* Tasks Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {filteredTasks.map((task) => (
+          {tasks.map((task) => (
             <div
               key={task._id}
               className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
             >
-              {/* Task Header */}
               <div className="p-4 border-b border-gray-100">
                 <h3 className="font-bold text-gray-800 text-lg mb-2">{task.name}</h3>
                 <p className="text-gray-600 text-sm line-clamp-2">{task.description}</p>
               </div>
 
-              {/* Task Details */}
               <div className="px-4 py-3 bg-gray-50">
                 <div className="grid grid-cols-2 gap-3 text-sm mb-3">
                   <div>
@@ -163,7 +190,6 @@ const Tasks = () => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex justify-between mt-2">
                   <Link
                     to={`/project/${projectId}/task/${task._id}/resources`}
@@ -192,7 +218,6 @@ const Tasks = () => {
           ))}
         </div>
 
-        {/* Floating Add New Task Button */}
         <Link
           to={`/project/${projectId}/add-task`}
           className={`fixed bottom-8 right-8 bg-teal-500 text-white p-4 rounded-full shadow-lg hover:bg-teal-600 transition-all duration-300 flex items-center justify-center transform hover:scale-110 z-50 ${

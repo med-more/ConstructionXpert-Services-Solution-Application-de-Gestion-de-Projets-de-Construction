@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import { FaBoxOpen, FaTag, FaWeightHanging, FaTruck, FaSave, FaArrowLeft, FaEdit } from "react-icons/fa";
 import { useEffect } from "react";
+import toast, { Toaster } from "react-hot-toast"; // Import React Hot Toast
 
 const EditResource = () => {
   const { projectId, taskId, resourceId } = useParams();
@@ -32,9 +33,25 @@ const EditResource = () => {
       try {
         const response = await axios.put(`http://localhost:7000/api/resource/${resourceId}`, values);
         console.log("Resource updated:", response.data);
-        navigate(`/project/${projectId}/task/${taskId}/resources`);
+
+        // Show success toast
+        toast.success("Resource updated successfully!", {
+          duration: 1500,
+          position: "top-center",
+        });
+
+        // Redirect to resources page after a short delay
+        setTimeout(() => {
+          navigate(`/project/${projectId}/task/${taskId}/resources`);
+        }, 1500);
       } catch (error) {
         console.error("Error updating resource:", error);
+
+        // Show error toast
+        toast.error("Failed to update resource. Please try again.", {
+          duration: 1500,
+          position: "top-center",
+        });
       }
     },
   });
@@ -52,6 +69,12 @@ const EditResource = () => {
         });
       } catch (error) {
         console.error("Error fetching resource:", error);
+
+        // Show error toast if fetching fails
+        toast.error("Failed to fetch resource details. Please try again.", {
+          duration: 1500,
+          position: "top-center",
+        });
       }
     };
 
@@ -60,6 +83,9 @@ const EditResource = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-10 px-4">
+      {/* Add the Toaster component */}
+      <Toaster />
+
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-teal-500 to-teal-600 p-6 text-white">
@@ -168,8 +194,7 @@ const EditResource = () => {
 
               <div className="flex space-x-4">
                 <button
-                  type="button"
-                  onClick={() => formik.resetForm()}
+                  type="button" onClick={() => {formik.resetForm()}}
                   className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
                 >
                   Reset

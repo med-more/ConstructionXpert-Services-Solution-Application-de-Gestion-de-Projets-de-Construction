@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast"; 
 import {
   FaTasks,
   FaFileAlt,
@@ -38,15 +39,27 @@ const AddTask = () => {
           projectId,
         });
         console.log("Task created:", response.data);
-        window.location.href = `/project/${projectId}/tasks`;
+        toast.success("Task created successfully!", {
+          duration: 1500,
+          position: "top-center",
+        });
+        setTimeout(() => {
+          window.location.href = `/project/${projectId}/tasks`;
+        }, 2000);
       } catch (error) {
         console.error("Error creating task:", error);
+        toast.error("Failed to create task. Please try again.", {
+          duration: 1500,
+          position: "top-center",
+        });
       }
     },
   });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-10 px-4">
+      <Toaster />
+
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-teal-500 to-teal-600 p-6 text-white">

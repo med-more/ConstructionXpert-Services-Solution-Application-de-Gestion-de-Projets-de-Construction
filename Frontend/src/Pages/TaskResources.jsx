@@ -15,6 +15,7 @@ import {
   FaBuilding,
   FaCalendarAlt,
 } from "react-icons/fa";
+import toast, { Toaster } from "react-hot-toast";
 
 const TaskResources = () => {
   const { projectId, taskId } = useParams();
@@ -24,30 +25,30 @@ const TaskResources = () => {
   const [task, setTask] = useState(null);
   const [project, setProject] = useState(null);
 
-  // Fetch project, task, and resources from the backend
   useEffect(() => {
     const fetchProjectTaskAndResources = async () => {
       try {
-        // Fetch project details
         const projectResponse = await axios.get(`http://localhost:7000/api/projects/${projectId}`);
         setProject(projectResponse.data);
 
-        // Fetch task details
         const taskResponse = await axios.get(`http://localhost:7000/api/tasks/${taskId}`);
         setTask(taskResponse.data);
 
-        // Fetch resources for the task
         const resourcesResponse = await axios.get(`http://localhost:7000/api/resource/task/${taskId}`);
         setResources(resourcesResponse.data);
       } catch (error) {
         console.error("Error fetching project, task, or resources:", error);
+
+        toast.error("Failed to fetch project, task, or resources. Please try again.", {
+          duration: 1500,
+          position: "top-center",
+        });
       }
     };
 
     fetchProjectTaskAndResources();
   }, [projectId, taskId]);
 
-  // Handle scroll to show/hide floating button
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 200) {
@@ -64,23 +65,58 @@ const TaskResources = () => {
     };
   }, []);
 
-  // Handle resource deletion
-  const handleDeleteResource = async (resourceId) => {
-    if (window.confirm("Are you sure you want to delete this resource?")) {
-      try {
-        await axios.delete(`http://localhost:7000/api/resource/${resourceId}`);
-        setResources(resources.filter((resource) => resource._id !== resourceId));
-      } catch (error) {
-        console.error("Error deleting resource:", error);
+  const handleDeleteResource = (resourceId) => {
+    toast.custom(
+      (t) => (
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <p className="text-lg font-medium text-gray-800 mb-4">Are you sure you want to delete this resource?</p>
+          <div className="flex justify-end space-x-3">
+            <button
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              onClick={() => toast.dismiss(t.id)} 
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              onClick={async () => {
+                try {
+                  await axios.delete(`http://localhost:7000/api/resource/${resourceId}`);
+                  setResources(resources.filter((resource) => resource._id !== resourceId));
+
+                  toast.success("Resource deleted successfully!", {
+                    duration: 1500,
+                    position: "top-center",
+                  });
+
+                  toast.dismiss(t.id);
+                } catch (error) {
+                  console.error("Error deleting resource:", error);
+
+                  toast.error("Failed to delete resource. Please try again.", {
+                    duration: 1500,
+                    position: "top-center",
+                  });
+
+                  toast.dismiss(t.id);
+                }
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity, 
       }
-    }
+    );
   };
 
   if (!task || !project) {
     return <div>Loading...</div>;
   }
 
-  // Function to get resource type icon
   const getResourceIcon = (type) => {
     switch (type) {
       case "Labor":
@@ -100,8 +136,9 @@ const TaskResources = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-16">
+      <Toaster />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Task Header */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6 border border-gray-200">
           <div className="bg-gradient-to-r from-teal-500 to-teal-800 p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between">
@@ -132,7 +169,6 @@ const TaskResources = () => {
           </div>
         </div>
 
-        {/* Controls */}
         <div className="flex justify-end mb-6">
           <Link
             to={`/project/${projectId}/task/${taskId}/add-resource`}
@@ -143,7 +179,6 @@ const TaskResources = () => {
           </Link>
         </div>
 
-        {/* Resources Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {resources.map((resource) => (
             <div
@@ -198,7 +233,6 @@ const TaskResources = () => {
           ))}
         </div>
 
-        {/* Floating Add New Resource Button */}
         <Link
           to={`/project/${projectId}/task/${taskId}/add-resource`}
           className={`fixed bottom-8 right-8 bg-teal-500 text-white p-4 rounded-full shadow-lg hover:bg-teal-600 transition-all duration-300 flex items-center justify-center transform hover:scale-110 z-50 ${

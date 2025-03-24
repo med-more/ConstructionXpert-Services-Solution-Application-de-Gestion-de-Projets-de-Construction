@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import axios from "axios"
+import toast, { Toaster } from "react-hot-toast" 
 import {
   FaBuilding,
   FaFileAlt,
@@ -38,10 +39,14 @@ const AddProject = () => {
     validationSchema,
     onSubmit: async (values) => {
       try {
-        const response = await axios.post("http://localhost:7000/api/projects", values)
-        navigate("/")
+        const response = await axios.post("http://localhost:7000/api/projects", values);
+        toast.success("Project created successfully!"); 
+        setTimeout(() => {
+          navigate("/"); 
+        }, 1500); 
       } catch (error) {
-        console.error("Error creating project:", error)
+        console.error("Error creating project:", error);
+        toast.error("Failed to create project. Please try again."); 
       }
     },
   })
@@ -54,6 +59,7 @@ const AddProject = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-20 pb-10 px-4">
+      <Toaster position="top-center" reverseOrder={false} /> 
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-teal-500 to-teal-600 p-6 text-white">
