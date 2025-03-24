@@ -1,13 +1,14 @@
 Uml: 
-<!-- Failed to upload "Class.png" -->
+<img width="349" alt="Image" src="https://github.com/user-attachments/assets/06606669-9c98-4f5c-af73-997f82e45e99" />
 
-<!-- Failed to upload "use case.png" -->
+<img width="275" alt="Image" src="https://github.com/user-attachments/assets/dc5fec88-00df-4896-afbb-31d830d00ec8" />
 
-<!-- Uploading "1.png"... -->
+<img width="335" alt="Image" src="https://github.com/user-attachments/assets/b9ce43fe-9977-412e-935d-e7a2b08c783b" />
 
-<!-- Uploading "2.png"... -->
+<img width="327" alt="Image" src="https://github.com/user-attachments/assets/f71eb366-a10f-4f91-a0f0-1c45ce27cabd" />
 
-<!-- Uploading "3.png"... -->
+<img width="334" alt="Image" src="https://github.com/user-attachments/assets/14601785-85e1-4c81-99fd-eb5450bd3cb1" />
+
 
 Website: 
 <img width="933" alt="Image" src="https://github.com/user-attachments/assets/baa5ad10-b004-49fe-a5fc-135a6380944a" />
